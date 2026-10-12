@@ -1,0 +1,67 @@
+name: Release on Tag
+
+permissions:
+  contents: read
+  id-token: write
+
+on:
+  push:
+    tags: ['*']
+
+jobs:
+  tagger:
+    name: Find Tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Node
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          fetch-tags: true
+
+      - name: Find Tag
+        id: finder
+        run: |
+          git tag --sort=-v:refname | head -n 1
+          echo "tag=$(git tag --sort=-v:refname | head -n 1)" >> "$GITHUB_OUTPUT"
+
+    outputs:
+      tag: ${{ steps.finder.outputs.tag }}
+
+  publish:
+    name: Publish on Tag
+    needs:
+      - tagger
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: distribution
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          fetch-tags: true
+
+      - name: Make Node Happy
+        run: corepack enable
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .node-version
+          registry-url: "https://registry.npmjs.org"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: |
+          pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Publish
+        run: |
+          npm --version
+          npm version "${{needs.tagger.outputs.tag}}" --no-git-tag-version
+          npm publish

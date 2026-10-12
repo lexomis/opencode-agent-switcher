@@ -1,0 +1,44 @@
+{
+  "name": "lexomis-opencode-plugin",
+  "version": "0.1.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lexomis/opencode-priority-agents.git"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./tui": "./tui.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint:biome": "${BIOME:-biome} check --error-on-warnings",
+    "lint:fix": "${BIOME:-biome} check --write --unsafe --max-diagnostics=0",
+    "lint": "pnpm lint:biome",
+    "test:smoke:server": "node scripts/smoke-server.mjs",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,json,jsonc}": [
+      "biome format --write --no-errors-on-unmatched"
+    ]
+  },
+  "dependencies": {
+    "@opencode/plugin": "2.0.26",
+    "@opencode/schema": "2.0.26",
+    "effect": "4.0.0-rc.112",
+    "yaml": "2.8.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@opencode/client": "2.0.26",
+    "@opentui/core": "0.5.17",
+    "@opentui/solid": "0.5.17",
+    "@types/node": "24.10.0",
+    "lint-staged": "17.3.0",
+    "solid-js": "1.9.12",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  },
+  "packageManager": "pnpm@12.9.0+sha512.8f64efa0b792986ca98ae568791bcd7722807e274c4f0c1d9853c62116495c584119db98762a2a5343b1684d361b9ae26fdd16d551666d7635346d3fae830ddd"
+}
