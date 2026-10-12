@@ -17,6 +17,14 @@ Change priorities from OpenCode's command palette instead of editing multiple ag
 
 Use priorities for deliberate model selection, not automatic failover after provider errors. Keep session selections stable while the agent, catalog ID, and plugin process remain unchanged.
 
+## Installation - via Package Manager
+
+Install via your package manager of choice:
+
+```sh
+pnpm add opencode-priority-agents
+```
+
 ## Installation - via Clone
 
 Clone the repository and install dependencies with pnpm:
