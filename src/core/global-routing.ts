@@ -5,7 +5,70 @@ import type { SessionContext } from '@opencode/plugin/promise/session';
 import { idFromEntry, modelFromEntry, priorityFilePath, readPriorityConfig } from './global-priority.ts';
 
 export type Route = { id: string; alias: string; model: Model.Ref; options: Record<string, unknown> };
-type Routes = Map<string, Route[]>;
+export type Routes = Map<string, Route[]>;
+
+type SessionModel = Pick<Model.Ref, 'providerID' | 'id' | 'variant'>;
+
+const sameModel = (left: SessionModel, right: SessionModel): boolean =>
+  left.providerID === right.providerID && left.id === right.id && left.variant === right.variant;
+
+const sameCatalogModel = (left: SessionModel, right: SessionModel): boolean =>
+  left.providerID === right.providerID && left.id === right.id;
+
+/** Match explicit quota and rate-limit failures that should advance a priority chain. */
+export function isPriorityFallbackError(error: { type: string; message: string; status?: number }): boolean {
+  return (
+    error.status === 429 ||
+    error.status === 529 ||
+    /\b(?:429|529|rate[\s_-]*limit|too many requests|quota|usage limit|freeusage|gousage)\b/i.test(
+      `${error.type} ${error.message}`,
+    )
+  );
+}
+
+/** Return the next route after the model that actually failed, without wrapping the chain. */
+export function nextFallbackRoute(
+  sessionID: string,
+  alias: string,
+  failedModel: SessionModel,
+  routes: Routes,
+  pins: ReadonlyMap<string, Route>,
+): Route | undefined {
+  const chain = routes.get(alias);
+  if (!chain?.length) return undefined;
+  const pin = pins.get(sessionID);
+  const pinnedIndex =
+    pin?.alias === alias && sameCatalogModel(pin.model, failedModel)
+      ? chain.findIndex((candidate) => candidate.id === pin.id)
+      : -1;
+  const exactModelIndex = chain.findIndex((candidate) => sameModel(candidate.model, failedModel));
+  const currentIndex = pinnedIndex >= 0 ? pinnedIndex : exactModelIndex;
+  return currentIndex < 0 ? undefined : chain[currentIndex + 1];
+}
+
+type PriorityRetryEvent = {
+  sessionID: string;
+  agent: string;
+  model: SessionModel;
+  error: { type: string; message: string; status?: number };
+  decision: { retry: boolean; delay?: number };
+};
+
+/** Switch the session model before OpenCode retries the same in-flight turn. */
+export async function advancePriorityOnRetry(
+  event: PriorityRetryEvent,
+  routes: Routes,
+  pins: Map<string, Route>,
+  switchModel: (sessionID: string, model: Model.Ref) => Promise<void>,
+): Promise<Route | undefined> {
+  if (!isPriorityFallbackError(event.error)) return undefined;
+  const route = nextFallbackRoute(event.sessionID, event.agent, event.model, routes, pins);
+  if (!route) return undefined;
+  await switchModel(event.sessionID, route.model);
+  pins.set(event.sessionID, route);
+  event.decision = { retry: true, delay: 0 };
+  return route;
+}
 
 /** Resolve model references at the SDK boundary without importing host schema implementations. */
 function modelReference(reference: string, variant?: string): Model.Ref {
@@ -49,7 +112,7 @@ export function applyModels(editor: AgentEditor, routes: Routes): void {
   }
 }
 
-/** Choose a stable per-session route, with automatic fallback intentionally disabled. */
+/** Choose a stable per-session route, advancing only through explicit fallback handling. */
 export function chooseRoute(
   sessionID: string,
   alias: string,
@@ -101,6 +164,32 @@ export async function setupGlobalRouting(ctx: Plugin.Context): Promise<() => Pro
     if (failure) throw failure;
     await ensureRegistration();
     applyContext(event, routes);
+  });
+  await ctx.session.hook('retry', async (event) => {
+    const error = event.error;
+    const matchesFallback = isPriorityFallbackError(error);
+    const pin = pins.get(event.sessionID);
+    const chain = routes.get(event.agent);
+    console.info(
+      `agent-priority: retry hook session=${event.sessionID} agent=${event.agent} ` +
+        `model=${event.model.providerID}/${event.model.id} variant=${event.model.variant ?? 'none'} ` +
+        `pin=${pin?.id ?? 'none'} chain=${chain?.map((route) => route.id).join(',') ?? 'missing'} ` +
+        `retry=${event.decision.retry} error=${error.type} status=${error.status ?? 'none'} fallback=${matchesFallback}`,
+    );
+    try {
+      const route = await advancePriorityOnRetry(event, routes, pins, async (sessionID, model) => {
+        await ctx.session.switchModel({ sessionID, model });
+      });
+      if (route) console.info(`agent-priority: retrying ${event.agent} with fallback model ${route.id}`);
+      else if (matchesFallback) {
+        console.warn(
+          `agent-priority: no next priority for ${event.agent} after ${event.model.providerID}/${event.model.id} ` +
+            `(pin=${pin?.id ?? 'none'} chain=${chain?.map((route) => route.id).join(',') ?? 'missing'})`,
+        );
+      }
+    } catch (error) {
+      console.error(`agent-priority: failed to switch ${event.agent} to its next priority model`, error);
+    }
   });
   const controller = new AbortController();
   const events = (async () => {

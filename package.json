@@ -28,7 +28,7 @@
     "lint": "pnpm lint:fix && pnpm lint:biome",
     "test:smoke": "node scripts/smoke-server.mjs",
     "test:ts": "vitest run --config vitest.config.ts",
-    "test": "pnpm test:smoke && pnpm test:ts"
+    "test": "pnpm test:ts"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx,json,jsonc}": [

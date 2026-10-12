@@ -25,9 +25,9 @@ export function PrioritySidebar(props: Props) {
       groups.map((group, index) => (
         <box width="100%" flexDirection="row" gap={1}>
           <text fg={rowColor(colorOffset + index)} flexGrow={1} flexShrink={1} minWidth={0} truncate>
-            {group.name}
+            <b>{group.name}</b>
           </text>
-          <text fg={rowColor(colorOffset + index)} flexShrink={0} textAlign="right">
+          <text fg={context.theme.text.muted} flexShrink={0} textAlign="right">
             {group.priority[0]?.id}
           </text>
         </box>
@@ -53,11 +53,16 @@ export function PrioritySidebar(props: Props) {
 
   return (
     <box width="100%" flexDirection="column" paddingTop={1} paddingLeft={1} paddingRight={1}>
-      <text onMouseDown={() => setCollapsed((value) => !value)} fg={context.theme.text.action.primary.base}>
-        <b>
-          {collapsed() ? '▶' : '▼'} Agent Switcher ({agents().length + profiles().length})
-        </b>
-      </text>
+      <box
+        onMouseDown={() => setCollapsed((value) => !value)}
+        paddingLeft={1}
+        paddingRight={1}
+        backgroundColor={context.theme.background.action.primary.base}
+      >
+        <text fg={context.theme.text.action.primary.base}>
+          <b>{collapsed() ? '▶ ' : '▼ '}Agent Switcher</b>
+        </text>
+      </box>
       {error() && <text fg={context.theme.text.feedback.error.base}>{error()}</text>}
       {!collapsed() && (
         <box width="100%" flexDirection="column" marginTop={1}>

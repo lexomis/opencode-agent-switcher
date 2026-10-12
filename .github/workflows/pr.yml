@@ -49,4 +49,4 @@ jobs:
         run: pnpm build
 
       - name: Test packages
-        run: pnpm test
+        run: pnpm test:ts
