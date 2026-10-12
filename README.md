@@ -15,8 +15,7 @@ Change priorities from OpenCode's command palette instead of editing multiple ag
 - Inspect preferred models in the sidebar without leaving OpenCode.
 - Preserve native agent identities, prompts, tools, and permission policies.
 
-Use priorities for deliberate model selection, not automatic failover after provider errors.
-Keep session selections stable while the agent, catalog ID, and plugin process remain unchanged.
+Use priorities for deliberate model selection, not automatic failover after provider errors. Keep session selections stable while the agent, catalog ID, and plugin process remain unchanged.
 
 ## Installation - via Clone
 
