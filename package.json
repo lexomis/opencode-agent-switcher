@@ -1,7 +1,16 @@
 {
-  "name": "lexomis-opencode-plugin",
-  "version": "0.1.0",
+  "name": "@lexomis/opencode-agent-switcher",
+  "version": "0.1.1",
   "type": "module",
+  "files": [
+    "index.ts",
+    "tui.ts",
+    "src/",
+    "!src/**/*.test.ts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lexomis/opencode-priority-agents.git"
