@@ -14,11 +14,7 @@
         pkgs = import nixpkgs { inherit system; };
         nodeVersion = pkgs.lib.trim (builtins.readFile ./.node-version);
         nodejs =
-          pkgs."nodejs_${nodeVersion}"
-            or (throw "Unsupported node version in .node-version: ${nodeVersion}");
-        nodejsCorepack =
-          pkgs."corepack_${nodeVersion}"
-            or (throw "Unsupported node version in .node-version: ${nodeVersion}");
+          pkgs."nodejs_${nodeVersion}" or (throw "Unsupported node version in .node-version: ${nodeVersion}");
         shellWrapper = pkgs.writeShellScript "nix-develop-shell" ''
           exec "''${SHELL}" -i
         '';
@@ -27,7 +23,6 @@
         devShells.default = pkgs.mkShell {
           buildInputs = [
             nodejs
-            nodejsCorepack
             pkgs.pnpm
             pkgs.biome
           ];

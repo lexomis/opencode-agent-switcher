@@ -79,7 +79,7 @@ export default Plugin.define({
                 name,
               }));
               const group = await context.ui.dialog.select<GroupValue>({
-                title: 'Global Agent Priority',
+                title: 'Agent Switcher',
                 options: groups.map((value) => ({
                   title: value.name,
                   value,

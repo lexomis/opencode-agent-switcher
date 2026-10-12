@@ -8,8 +8,6 @@
     "includes": [
       "src/**/*",
       "scripts/**/*",
-      "index.ts",
-      "tui.ts",
       "vitest.config.ts",
       "!**/package.json",
       "!**/tsconfig*.json",
