@@ -173,10 +173,9 @@ Add the checkout directory to `plugins` in your global `~/.config/opencode/openc
 }
 ```
 
-Replace `/absolute/path/to/opencode-priority-agents` with your checkout's absolute path.
-Keep existing configuration entries.
-Install from source; do not use npm installation for this private package.
-Use the same directory entry for automatic server and TUI plugin loading.
+Use the same checkout directory in `~/.config/opencode/cli.json` for the TUI plugin. OpenCode requires local plugin config entries to be directories; `pnpm build` creates ignored root `index.js` and `tui.ts` symlinks to the built implementations in `dist/`.
+
+Replace `/absolute/path/to/opencode-priority-agents` with your checkout's absolute path, keep existing configuration entries, and re-run `pnpm build` after changing the source.
 
 ## Contributing
 
@@ -188,7 +187,7 @@ pnpm build
 pnpm lint
 ```
 
-`pnpm build` type-checks the source and compiles both plugins into `dist/` using Node. The package exports `dist/index.js` and `dist/tui.js`; re-run the build after source changes. CI runs the build explicitly before publishing. For local packing or publishing, run `pnpm build` first; packaging does not trigger a build automatically.
+`pnpm build` type-checks the source and compiles both plugins into `dist/` using Node. The package exports `dist/index.js` as `./server` and `dist/tui.js` as `./tui`; re-run the build after source changes. CI runs the build explicitly before publishing. For local packing or publishing, run `pnpm build` first; packaging does not trigger a build automatically.
 
 Run the Vitest suite:
 

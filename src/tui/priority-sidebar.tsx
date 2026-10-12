@@ -15,14 +15,19 @@ export function PrioritySidebar(props: Props) {
   const [collapsed, setCollapsed] = createSignal(false);
   const [error, setError] = createSignal<string>();
 
-  const rows = (groups: TuiPriorityGroup[]) =>
+  const rowColor = (index: number) => {
+    const palette = context.theme.categorical;
+    return palette.length ? palette[index % palette.length][500] : context.theme.hue.accent[500];
+  };
+
+  const rows = (groups: TuiPriorityGroup[], colorOffset = 0) =>
     groups.length ? (
-      groups.map((group) => (
+      groups.map((group, index) => (
         <box width="100%" flexDirection="row" gap={1}>
-          <text fg={context.theme.text.base} flexGrow={1} flexShrink={1} minWidth={0} truncate>
+          <text fg={rowColor(colorOffset + index)} flexGrow={1} flexShrink={1} minWidth={0} truncate>
             {group.name}
           </text>
-          <text fg={context.theme.text.action.secondary.base} flexShrink={0} textAlign="right">
+          <text fg={rowColor(colorOffset + index)} flexShrink={0} textAlign="right">
             {group.priority[0]?.id}
           </text>
         </box>
@@ -57,13 +62,13 @@ export function PrioritySidebar(props: Props) {
       {!collapsed() && (
         <box width="100%" flexDirection="column" marginTop={1}>
           <text fg={context.theme.text.action.primary.base}>
-            <b>Priority Agents</b>
+            <b>Agents</b>
           </text>
           {rows(agents())}
           <text fg={context.theme.text.action.primary.base} marginTop={1}>
             <b>Profiles</b>
           </text>
-          {rows(profiles())}
+          {rows(profiles(), agents().length)}
         </box>
       )}
     </box>

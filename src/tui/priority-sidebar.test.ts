@@ -20,6 +20,8 @@ const ui = vi.hoisted(() => ({
       action: { primary: { base: 'primary' }, secondary: { base: 'secondary' } },
       feedback: { error: { base: 'error' } },
     },
+    categorical: [{ 500: 'category-0' }, { 500: 'category-1' }, { 500: 'category-2' }],
+    hue: { accent: { 500: 'accent-500' } },
   },
 }));
 
@@ -89,15 +91,22 @@ beforeEach(() => {
   ui.readConfig.mockReset().mockResolvedValue(config);
 });
 
-it('uses Agent Switcher and distinct theme colors for headings, names, and models', async () => {
+it('uses Agent Switcher, renames the agent section, and colors rows from the theme palette', async () => {
   const nodes = elements(await load());
   const heading = nodes.find((node) => node.type === 'text' && text(node).includes('Agent Switcher'));
   expect(text(heading)).toBe('▼ Agent Switcher (3)');
   expect(heading?.props.fg).toBe('primary');
-  for (const name of ['PlanBuilder', 'Reviewer']) {
-    expect(nodes.find((node) => node.type === 'text' && text(node) === name)?.props.fg).toBe('base');
+  expect(nodes.some((node) => node.type === 'text' && text(node) === 'Agents')).toBe(true);
+  expect(nodes.some((node) => node.type === 'text' && text(node) === 'Priority Agents')).toBe(false);
+  for (const [label, expectedColor] of [
+    ['PlanBuilder', 'category-0'],
+    ['GlmLight', 'category-0'],
+    ['VeryLongAgentNameForNarrowSidebars', 'category-1'],
+    ['GptHeavy', 'category-1'],
+    ['Reviewer', 'category-2'],
+  ]) {
+    expect(nodes.find((node) => node.type === 'text' && text(node) === label)?.props.fg).toBe(expectedColor);
   }
-  expect(nodes.find((node) => node.type === 'text' && text(node) === 'GlmLight')?.props.fg).toBe('secondary');
 });
 
 it('uses full-width rows with a shrinking name column and a separate right-aligned model', async () => {
