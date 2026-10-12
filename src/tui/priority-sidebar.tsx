@@ -15,14 +15,19 @@ export function PrioritySidebar(props: Props) {
   const [collapsed, setCollapsed] = createSignal(false);
   const [error, setError] = createSignal<string>();
 
-  const rows = (groups: TuiPriorityGroup[]) =>
+  const rowColor = (index: number) => {
+    const palette = context.theme.categorical;
+    return palette.length ? palette[index % palette.length][500] : context.theme.hue.accent[500];
+  };
+
+  const rows = (groups: TuiPriorityGroup[], colorOffset = 0) =>
     groups.length ? (
-      groups.map((group) => (
+      groups.map((group, index) => (
         <box width="100%" flexDirection="row" gap={1}>
-          <text fg={context.theme.text.base} flexGrow={1} flexShrink={1} minWidth={0} truncate>
-            {group.name}
+          <text fg={rowColor(colorOffset + index)} flexGrow={1} flexShrink={1} minWidth={0} truncate>
+            <b>{group.name}</b>
           </text>
-          <text fg={context.theme.text.action.secondary.base} flexShrink={0} textAlign="right">
+          <text fg={context.theme.text.muted} flexShrink={0} textAlign="right">
             {group.priority[0]?.id}
           </text>
         </box>
@@ -48,22 +53,27 @@ export function PrioritySidebar(props: Props) {
 
   return (
     <box width="100%" flexDirection="column" paddingTop={1} paddingLeft={1} paddingRight={1}>
-      <text onMouseDown={() => setCollapsed((value) => !value)} fg={context.theme.text.action.primary.base}>
-        <b>
-          {collapsed() ? '▶' : '▼'} Agent Switcher ({agents().length + profiles().length})
-        </b>
-      </text>
+      <box
+        onMouseDown={() => setCollapsed((value) => !value)}
+        paddingLeft={1}
+        paddingRight={1}
+        backgroundColor={context.theme.background.action.primary.base}
+      >
+        <text fg={context.theme.text.action.primary.base}>
+          <b>{collapsed() ? '▶ ' : '▼ '}Agent Switcher</b>
+        </text>
+      </box>
       {error() && <text fg={context.theme.text.feedback.error.base}>{error()}</text>}
       {!collapsed() && (
         <box width="100%" flexDirection="column" marginTop={1}>
           <text fg={context.theme.text.action.primary.base}>
-            <b>Priority Agents</b>
+            <b>Agents</b>
           </text>
           {rows(agents())}
           <text fg={context.theme.text.action.primary.base} marginTop={1}>
             <b>Profiles</b>
           </text>
-          {rows(profiles())}
+          {rows(profiles(), agents().length)}
         </box>
       )}
     </box>

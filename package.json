@@ -9,26 +9,33 @@
     "type": "git",
     "url": "git+https://github.com/lexomis/opencode-agent-switcher.git"
   },
+
+  "main": "./dist/index.js",
   "files": ["dist/"],
   "exports": {
     ".": "./dist/index.js",
+    "./server": "./dist/index.js",
     "./tui": "./dist/tui.js"
   },
+
   "scripts": {
     "build:tsc": "tsc --noEmit",
     "build:tui": "node scripts/build.mjs",
+    "postbuild": "node scripts/create-dev-symlinks.mjs",
     "build": "pnpm build:tsc && pnpm build:tui",
     "lint:biome": "${BIOME:-biome} check --error-on-warnings",
     "lint:fix": "${BIOME:-biome} check --write --unsafe --max-diagnostics=0",
-    "lint": "pnpm lint:biome",
-    "test:smoke:server": "node scripts/smoke-server.mjs",
-    "test": "vitest run --config vitest.config.ts"
+    "lint": "pnpm lint:fix && pnpm lint:biome",
+    "test:smoke": "node scripts/smoke-server.mjs",
+    "test:ts": "vitest run --config vitest.config.ts",
+    "test": "pnpm test:ts"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx,json,jsonc}": [
       "biome format --write --no-errors-on-unmatched"
     ]
   },
+
   "dependencies": {
     "@opencode/plugin": "2.0.26",
     "@opencode/schema": "2.0.26",

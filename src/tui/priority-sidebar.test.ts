@@ -20,6 +20,9 @@ const ui = vi.hoisted(() => ({
       action: { primary: { base: 'primary' }, secondary: { base: 'secondary' } },
       feedback: { error: { base: 'error' } },
     },
+    background: { action: { primary: { base: 'primary-background' } } },
+    categorical: [{ 500: 'category-0' }, { 500: 'category-1' }, { 500: 'category-2' }],
+    hue: { accent: { 500: 'accent-500' } },
   },
 }));
 
@@ -89,15 +92,32 @@ beforeEach(() => {
   ui.readConfig.mockReset().mockResolvedValue(config);
 });
 
-it('uses Agent Switcher and distinct theme colors for headings, names, and models', async () => {
+it('styles the Agent Switcher badge, renames the agent section, and colors model IDs from the theme', async () => {
   const nodes = elements(await load());
   const heading = nodes.find((node) => node.type === 'text' && text(node).includes('Agent Switcher'));
-  expect(text(heading)).toBe('▼ Agent Switcher (3)');
+  expect(text(heading)).toBe('▼ Agent Switcher');
   expect(heading?.props.fg).toBe('primary');
-  for (const name of ['PlanBuilder', 'Reviewer']) {
-    expect(nodes.find((node) => node.type === 'text' && text(node) === name)?.props.fg).toBe('base');
-  }
-  expect(nodes.find((node) => node.type === 'text' && text(node) === 'GlmLight')?.props.fg).toBe('secondary');
+  const badge = nodes.find((node) => node.type === 'box' && node.props.backgroundColor);
+  expect(badge?.props).toMatchObject({
+    backgroundColor: 'primary-background',
+    paddingLeft: 1,
+    paddingRight: 1,
+  });
+  expect(nodes.some((node) => node.type === 'text' && text(node) === 'Agents')).toBe(true);
+  expect(nodes.some((node) => node.type === 'text' && text(node) === 'Priority Agents')).toBe(false);
+  expect(nodes.find((node) => node.type === 'text' && text(node) === 'PlanBuilder')?.props.fg).toBe('category-0');
+  expect(nodes.find((node) => node.type === 'text' && text(node) === 'PlanBuilder')?.props.children).toMatchObject({
+    type: 'b',
+  });
+  expect(nodes.find((node) => node.type === 'text' && text(node) === 'GlmLight')?.props.fg).toBe('muted');
+  expect(nodes.find((node) => node.type === 'text' && text(node) === 'GlmLight')?.props.children).toBe('GlmLight');
+  expect(nodes.find((node) => node.type === 'text' && text(node) === 'Reviewer')?.props.fg).toBe('category-2');
+  expect(nodes.find((node) => node.type === 'text' && text(node) === 'Reviewer')?.props.children).toMatchObject({
+    type: 'b',
+  });
+  expect(
+    nodes.filter((node) => node.type === 'text' && text(node) === 'GptHeavy').map((node) => node.props.fg),
+  ).toEqual(['muted', 'muted']);
 });
 
 it('uses full-width rows with a shrinking name column and a separate right-aligned model', async () => {
@@ -119,7 +139,7 @@ it('collapses and expands the agent and profile sections', async () => {
   const toggle = heading.props.onMouseDown as () => void;
   toggle();
   const collapsed = render();
-  expect(text(collapsed)).toContain('▶ Agent Switcher (3)');
+  expect(text(collapsed)).toContain('▶ Agent Switcher');
   expect(text(collapsed)).not.toContain('PlanBuilder');
   toggle();
   expect(text(render())).toContain('PlanBuilder');
@@ -141,5 +161,5 @@ it('reloads first-choice models and displays configuration errors in the error c
   await vi.waitFor(() => expect(ui.signals[3]).toBe('Invalid priorities'));
   const nodes = elements(render());
   expect(nodes.find((node) => node.type === 'text' && text(node) === 'Invalid priorities')?.props.fg).toBe('error');
-  expect(text(render())).toContain('Agent Switcher (0)');
+  expect(text(render())).toContain('Agent Switcher');
 });
