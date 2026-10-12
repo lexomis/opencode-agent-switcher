@@ -19,10 +19,12 @@ Use priorities for deliberate model selection, not automatic failover after prov
 
 ## Installation - via Package Manager
 
-Install via your package manager of choice:
+Add package to `plugins` in one of your `opencode.json(c)` 's:
 
-```sh
-pnpm add opencode-priority-agents
+```json
+{
+  "plugins": ["TODO"]
+}
 ```
 
 ## Installation - via Clone
