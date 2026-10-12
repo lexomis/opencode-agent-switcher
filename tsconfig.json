@@ -13,6 +13,6 @@
 		"types": ["node"],
 		"skipLibCheck": true
 	},
-	"include": ["index.ts", "tui.ts", "src/**/*.ts", "src/**/*.tsx"],
-	"exclude": ["src/tui-compiled", "src/tui/types"]
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"exclude": []
 }

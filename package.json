@@ -2,12 +2,6 @@
   "name": "@lexomis/opencode-agent-switcher",
   "version": "0.1.1",
   "type": "module",
-  "files": [
-    "index.ts",
-    "tui.ts",
-    "src/",
-    "!src/**/*.test.ts"
-  ],
   "publishConfig": {
     "access": "public"
   },
@@ -15,12 +9,15 @@
     "type": "git",
     "url": "git+https://github.com/lexomis/opencode-agent-switcher.git"
   },
+  "files": ["dist/"],
   "exports": {
-    ".": "./index.ts",
-    "./tui": "./tui.ts"
+    ".": "./dist/index.js",
+    "./tui": "./dist/tui.js"
   },
   "scripts": {
-    "build": "tsc --noEmit",
+    "build:tsc": "tsc --noEmit",
+    "build:tui": "node scripts/build.mjs",
+    "build": "pnpm build:tsc && pnpm build:tui",
     "lint:biome": "${BIOME:-biome} check --error-on-warnings",
     "lint:fix": "${BIOME:-biome} check --write --unsafe --max-diagnostics=0",
     "lint": "pnpm lint:biome",
@@ -35,15 +32,18 @@
   "dependencies": {
     "@opencode/plugin": "2.0.26",
     "@opencode/schema": "2.0.26",
-    "effect": "4.0.0-rc.112",
     "yaml": "2.8.3"
   },
   "devDependencies": {
+    "@babel/core": "7.29.7",
+    "@babel/preset-typescript": "7.27.1",
     "@biomejs/biome": "2.5.14",
     "@opencode/client": "2.0.26",
     "@opentui/core": "0.5.17",
     "@opentui/solid": "0.5.17",
     "@types/node": "24.10.0",
+    "babel-preset-solid": "1.9.12",
+    "esbuild": "0.28.2",
     "lint-staged": "17.3.0",
     "solid-js": "1.9.12",
     "typescript": "5.9.3",

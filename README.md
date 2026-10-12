@@ -4,10 +4,7 @@ Choose preferred models for OpenCode agents without rewriting their prompts or p
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-Manage agent-to-model assignments in one global YAML file across projects.
-Order model choices per agent, or share priorities through reusable profiles.
-Use the first choice for new sessions while keeping ongoing selections stable.
-Change priorities from OpenCode's command palette instead of editing multiple agent files.
+Manage agent-to-model assignments in one global YAML file across projects. Order model choices per agent, or share priorities through reusable profiles. Use the first choice for new sessions while keeping ongoing selections stable. Change priorities from OpenCode's command palette instead of editing multiple agent files.
 
 - Centralize provider models and settings in a shared catalog.
 - Switch between faster, cheaper, or more capable models without duplicating agent definitions.
@@ -17,44 +14,27 @@ Change priorities from OpenCode's command palette instead of editing multiple ag
 
 Use priorities for deliberate model selection, not automatic failover after provider errors. Keep session selections stable while the agent, catalog ID, and plugin process remain unchanged.
 
-## Installation - via Package Manager
+## Installation
 
 Add package to `plugins` in one of your `opencode.json(c)` 's:
 
 ```json
 {
-  "plugins": ["TODO"]
+  "plugins": ["@lexomis/opencode-agent-switcher"]
 }
 ```
 
-## Installation - via Clone
-
-Clone the repository and install dependencies with pnpm:
-
-```sh
-git clone https://github.com/lexomis/opencode-priority-agents.git
-cd opencode-priority-agents
-pnpm install --frozen-lockfile
-```
-
-Add the checkout directory to `plugins` in your global `~/.config/opencode/opencode.json`:
+To see the switcher in your TUI (which is basically required), add the same to your `cli.json(c)`:
 
 ```json
 {
-  "plugins": ["/absolute/path/to/opencode-priority-agents"]
+  "plugins": ["@lexomis/opencode-agent-switcher"]
 }
 ```
 
-Replace `/absolute/path/to/opencode-priority-agents` with your checkout's absolute path.
-Keep existing configuration entries.
-Install from source; do not use npm installation for this private package.
-Use the same directory entry for automatic server and TUI plugin loading.
-
 ## Quick Start
 
-Create a native OpenCode agent named `Reviewer` before configuring its model priority.
-Keep prompts, modes, tools, and permissions in native agent definitions.
-Replace example model references with available, authenticated provider models.
+Create a native OpenCode agent named `Reviewer` before configuring its model priority. Keep prompts, modes, tools, and permissions in native agent definitions. Replace example model references with available, authenticated provider models.
 
 Create the global priority directory:
 
@@ -104,13 +84,11 @@ agents:
     priority: [Standard, Fast]
 ```
 
-Treat additional entries as selectable alternatives, not automatic error fallbacks.
-Expect the first prompt to select and pin the first configured model.
-Start a new session to adopt reordered priorities.
-Keep a pinned catalog ID in the list to retain its selection.
-Keep the same session agent; expect switching agents to replace the remembered pin.
-Treat pins as process-local; expect plugin reloads or server restarts to reset them.
-Expect a removed pinned ID to switch to the first remaining entry.
+Treat additional entries as selectable alternatives, not automatic error fallbacks. 
+
+Expect the first prompt to select and pin the first configured model. Start a new session to adopt reordered priorities. Keep a pinned catalog ID in the list to retain its selection. Keep the same session agent; expect switching agents to replace the remembered pin.
+
+Treat pins as process-local; expect plugin reloads or server restarts to reset them. Expect a removed pinned ID to switch to the first remaining entry.
 
 ### Share a profile
 
@@ -139,23 +117,17 @@ agents:
     priority: [Fast]
 ```
 
-Use provider-supported options only.
-Set an explicit agent `priority` to override its profile, including an empty list.
-Include `template` for schema validation; do not expect template loading or agent creation.
-Match each configured agent key to an existing native agent ID.
+Use provider-supported options only. 
+
+Set an explicit agent `priority` to override its profile, including an empty list. Include `template` for schema validation; do not expect template loading or agent creation. Match each configured agent key to an existing native agent ID.
 
 ### Change priorities in the TUI
 
 Open **Change Agents Priority** from the command palette, or enter `/change-agents-priority`.
-Choose a profile or explicitly configured agent, then select a catalog entry.
-Promote that entry to first place in the global YAML file.
-Use the **Global Agent Priority** sidebar to inspect configured first choices.
-Edit a profile to update all agents inheriting its priorities.
-Treat sidebar values as configuration, not active-session model status.
 
-Expect file changes to trigger reloads without automatic model fallback.
-Correct malformed files before prompting; do not expect silent defaults.
-Ignore project-local priority files; use the global file only.
+Choose a profile or explicitly configured agent, then select a catalog entry. Promote that entry to first place in the global YAML file. Use the **Agent Switcher** sidebar to inspect configured first choices. Edit a profile to update all agents inheriting its priorities. Treat sidebar values as configuration, not active-session model status.
+
+Expect file changes to trigger reloads without automatic model fallback. Correct malformed files before prompting; do not expect silent defaults. Ignore project-local priority files; use the global file only.
 
 ## Options
 
@@ -182,25 +154,46 @@ Resolve the global directory in this order:
 Place priorities at `agents/priority.yaml` within that directory.
 Adjust the installation examples when overriding the global directory.
 
+## Installation - via Clone
+
+Clone the repository and install dependencies with pnpm:
+
+```sh
+git clone https://github.com/lexomis/opencode-priority-agents.git
+cd opencode-priority-agents
+pnpm install --frozen-lockfile
+pnpm build
+```
+
+Add the checkout directory to `plugins` in your global `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "plugins": ["/absolute/path/to/opencode-priority-agents"]
+}
+```
+
+Replace `/absolute/path/to/opencode-priority-agents` with your checkout's absolute path.
+Keep existing configuration entries.
+Install from source; do not use npm installation for this private package.
+Use the same directory entry for automatic server and TUI plugin loading.
+
 ## Contributing
 
-Install dependencies and run the typecheck:
+Install dependencies, build, and lint:
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm build
+pnpm lint
 ```
+
+`pnpm build` type-checks the source and compiles both plugins into `dist/` using Node. The package exports `dist/index.js` and `dist/tui.js`; re-run the build after source changes. CI runs the build explicitly before publishing. For local packing or publishing, run `pnpm build` first; packaging does not trigger a build automatically.
 
 Run the Vitest suite:
 
 ```sh
 pnpm test
-```
-
-The server smoke test is an opt-in local integration test, not part of `pnpm test`:
-
-```sh
-pnpm test:smoke:server
 ```
 
 It requires a locally configured OpenCode environment, including `opencode2` on
